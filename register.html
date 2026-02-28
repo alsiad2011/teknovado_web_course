@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>التسجيل — TeknoVado</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@200;400;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#060d14;--bg2:#071018;
+  --cyan:#00e8c8;--green:#39f5a0;
+  --teal:#00b4a0;--mint:#78ffd2;
+  --white:#e4f5f0;--muted:rgba(228,245,240,0.45);
+  --card:rgba(0,232,200,0.03);--border:rgba(0,232,200,0.12);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:'Cairo',sans-serif;overflow-x:hidden;cursor:none;}
+#fluid-canvas{position:fixed;inset:0;pointer-events:none;z-index:9999;}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");pointer-events:none;z-index:8000;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;justify-content:space-between;align-items:center;padding:1rem 5%;background:rgba(6,13,20,0.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border);}
+.logo{display:flex;align-items:center;text-decoration:none;}
+.logo img{height:42px;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(0,232,200,0.3));}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.85rem;letter-spacing:.05em;transition:color .3s;position:relative;}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;right:0;height:1px;background:var(--cyan);transform:scaleX(0);transition:transform .3s;}
+.nav-links a:hover,.nav-links a.active{color:var(--cyan);}
+.nav-links a:hover::after,.nav-links a.active::after{transform:scaleX(1);}
+.nav-cta{background:linear-gradient(90deg,var(--cyan),var(--green));color:var(--bg);padding:.55rem 1.4rem;font-family:'Cairo',sans-serif;font-weight:700;font-size:.8rem;border:none;cursor:none;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:filter .3s;}
+.nav-cta:hover{filter:brightness(1.15);}
+.hamburger{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:none;padding:.4rem;}
+.hamburger span{display:block;width:24px;height:2px;background:var(--cyan);border-radius:2px;transition:transform .3s,opacity .3s;}
+.hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg);}
+.hamburger.open span:nth-child(2){opacity:0;}
+.hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg);}
+.mobile-menu{display:none;position:fixed;inset:0;background:rgba(6,13,20,.97);backdrop-filter:blur(24px);z-index:490;flex-direction:column;align-items:center;justify-content:center;gap:2rem;opacity:0;transform:scale(1.03);transition:opacity .3s,transform .3s;pointer-events:none;}
+.mobile-menu.open{display:flex;opacity:1;transform:scale(1);pointer-events:all;}
+.mobile-menu a{color:var(--white);text-decoration:none;font-family:'Tajawal',sans-serif;font-weight:700;font-size:1.5rem;transition:color .3s;}
+.mobile-menu a:hover{color:var(--cyan);}
+.mobile-menu .nav-cta{font-size:.95rem;padding:.75rem 2rem;margin-top:1rem;}
+
+/* SHARED SECTIONS */
+section{padding:6rem 5%;}
+.inner{max-width:1200px;margin:0 auto;}
+.sec-label{font-size:.68rem;letter-spacing:.28em;text-transform:uppercase;color:var(--cyan);margin-bottom:.8rem;}
+.sec-title{font-family:'Tajawal',sans-serif;font-weight:700;font-size:clamp(1.8rem,3.5vw,3rem);line-height:1.18;margin-bottom:1rem;}
+.sec-sub{font-size:.95rem;line-height:1.85;color:var(--muted);max-width:580px;}
+.divider{width:60px;height:2px;background:linear-gradient(90deg,var(--cyan),var(--green));margin:1rem 0 2rem;}
+
+/* PAGE HERO (inner pages) */
+.page-hero{padding:10rem 5% 5rem;position:relative;overflow:hidden;border-bottom:1px solid var(--border);}
+.page-hero-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(0,232,200,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,232,200,.03) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 20%,transparent 70%);}
+.page-hero-glow{position:absolute;top:0;right:0;width:500px;height:500px;background:radial-gradient(circle,rgba(0,232,200,.07) 0%,transparent 70%);pointer-events:none;}
+.page-hero-inner{position:relative;z-index:2;max-width:700px;}
+.breadcrumb{display:flex;align-items:center;gap:.6rem;font-size:.75rem;color:var(--muted);margin-bottom:1.5rem;}
+.breadcrumb a{color:var(--cyan);text-decoration:none;}
+.breadcrumb span{opacity:.4;}
+
+/* CARDS */
+.card{background:var(--card);border:1px solid var(--border);transition:border-color .3s,transform .3s;}
+.card:hover{border-color:rgba(0,232,200,.28);transform:translateY(-4px);}
+
+/* BUTTONS */
+.btn-primary{background:linear-gradient(90deg,var(--cyan),var(--green));color:var(--bg);padding:.9rem 2.2rem;font-family:'Cairo',sans-serif;font-weight:700;font-size:.9rem;border:none;cursor:none;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);transition:filter .3s,transform .3s;}
+.btn-primary:hover{filter:brightness(1.1);transform:translateY(-2px);}
+.btn-outline{background:transparent;border:1px solid var(--cyan);color:var(--cyan);padding:.9rem 2.2rem;font-family:'Cairo',sans-serif;font-weight:700;font-size:.9rem;cursor:none;clip-path:polygon(10px 0%,100% 0%,calc(100% - 10px) 100%,0% 100%);position:relative;overflow:hidden;transition:color .3s;}
+.btn-outline::before{content:'';position:absolute;inset:0;background:var(--cyan);transform:translateX(-101%);transition:transform .3s;}
+.btn-outline:hover{color:var(--bg);}
+.btn-outline:hover::before{transform:translateX(0);}
+.btn-outline span{position:relative;z-index:1;}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:.5rem;padding:.28rem .8rem;border:1px solid rgba(0,232,200,.25);font-size:.7rem;letter-spacing:.15em;color:var(--cyan);}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 1.5s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* FOOTER */
+footer{background:var(--bg);border-top:1px solid var(--border);padding:2.5rem 5%;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;}
+.foot-logo img{height:30px;width:auto;filter:drop-shadow(0 0 6px rgba(0,232,200,.2));}
+.foot-links{display:flex;gap:1.5rem;list-style:none;}
+.foot-links a{font-size:.75rem;color:var(--muted);text-decoration:none;transition:color .3s;}
+.foot-links a:hover{color:var(--cyan);}
+footer p{font-size:.72rem;color:rgba(228,245,240,.2);letter-spacing:.06em;}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(32px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.show{opacity:1;transform:none;}
+.d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
+
+/* RESPONSIVE */
+@media(max-width:1024px){.nav-links,.nav-cta{display:none;}.hamburger{display:flex;}}
+@media(max-width:768px){
+  section{padding:4rem 5%;}
+  .page-hero{padding:8rem 4% 3.5rem;}
+  footer{flex-direction:column;text-align:center;}
+  .foot-links{justify-content:center;flex-wrap:wrap;}
+}
+@media(max-width:480px){
+  section{padding:3rem 4%;}
+  .sec-title{font-size:clamp(1.5rem,7vw,2.2rem);}
+}
+</style>
+
+<style>
+.reg-layout{display:grid;grid-template-columns:1fr 420px;gap:3rem;align-items:start;}
+.form-card{background:var(--card);border:1px solid rgba(0,232,200,.18);padding:2.5rem;}
+.form-title{font-family:'Tajawal',sans-serif;font-weight:700;font-size:1.4rem;margin-bottom:.5rem;}
+.form-sub{font-size:.85rem;color:var(--muted);margin-bottom:2rem;}
+.form-group{margin-bottom:1.4rem;}
+.form-group label{display:block;font-size:.82rem;font-weight:600;margin-bottom:.5rem;color:rgba(228,245,240,.8);}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;background:rgba(228,245,240,.04);
+  border:1px solid rgba(0,232,200,.15);color:var(--white);
+  padding:.85rem 1rem;font-family:'Cairo',sans-serif;font-size:.88rem;
+  outline:none;transition:border-color .3s,box-shadow .3s;
+  appearance:none;-webkit-appearance:none;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{
+  border-color:var(--cyan);
+  box-shadow:0 0 0 3px rgba(0,232,200,.08);
+}
+.form-group input::placeholder,.form-group textarea::placeholder{color:rgba(228,245,240,.25);}
+.form-group textarea{height:110px;resize:vertical;}
+.form-group select option{background:#071018;color:var(--white);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.submit-btn{width:100%;padding:1.1rem;background:linear-gradient(90deg,var(--cyan),var(--green));color:var(--bg);font-family:'Tajawal',sans-serif;font-weight:900;font-size:1rem;border:none;cursor:none;clip-path:polygon(12px 0%,100% 0%,calc(100% - 12px) 100%,0% 100%);transition:filter .3s,transform .3s;margin-top:.5rem;}
+.submit-btn:hover{filter:brightness(1.1);transform:translateY(-2px);}
+.form-note{font-size:.72rem;color:rgba(228,245,240,.3);text-align:center;margin-top:1rem;}
+
+/* Service Select Cards */
+.service-select{display:flex;flex-direction:column;gap:.7rem;margin-top:.5rem;}
+.svc-option{display:flex;align-items:center;gap:1rem;padding:1rem 1.2rem;background:rgba(228,245,240,.02);border:1px solid rgba(0,232,200,.1);cursor:none;transition:border-color .3s,background .3s;position:relative;}
+.svc-option input[type="radio"]{position:absolute;opacity:0;width:0;height:0;}
+.svc-option.selected{border-color:var(--cyan);background:rgba(0,232,200,.05);}
+.svc-opt-icon{font-size:1.3rem;flex-shrink:0;}
+.svc-opt-info h5{font-family:'Tajawal',sans-serif;font-weight:700;font-size:.92rem;margin-bottom:.2rem;}
+.svc-opt-info p{font-size:.75rem;color:var(--muted);}
+.svc-opt-price{margin-right:auto;font-family:'Tajawal',sans-serif;font-weight:700;color:var(--cyan);font-size:.88rem;white-space:nowrap;}
+.radio-dot{width:16px;height:16px;border:2px solid rgba(0,232,200,.4);border-radius:50%;flex-shrink:0;transition:border-color .3s,background .3s;}
+.svc-option.selected .radio-dot{border-color:var(--cyan);background:var(--cyan);}
+
+/* Info Sidebar */
+.info-sidebar{display:flex;flex-direction:column;gap:1.5rem;}
+.info-box{background:var(--card);border:1px solid var(--border);padding:1.8rem;}
+.info-box h4{font-family:'Tajawal',sans-serif;font-weight:700;margin-bottom:1rem;display:flex;align-items:center;gap:.6rem;}
+.info-list{list-style:none;display:flex;flex-direction:column;gap:.6rem;}
+.info-list li{font-size:.83rem;color:var(--muted);display:flex;align-items:center;gap:.6rem;}
+.info-list li::before{content:'✦';color:var(--cyan);font-size:.55rem;}
+.countdown-box{background:linear-gradient(135deg,rgba(0,232,200,.06),rgba(57,245,160,.04));border:1px solid rgba(0,232,200,.2);padding:1.8rem;text-align:center;}
+.countdown-title{font-size:.75rem;letter-spacing:.15em;text-transform:uppercase;color:var(--cyan);margin-bottom:1rem;}
+.countdown-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;}
+.countdown-unit{background:rgba(0,0,0,.3);padding:.8rem .4rem;}
+.countdown-num{font-family:'Tajawal',sans-serif;font-weight:900;font-size:1.8rem;color:var(--cyan);line-height:1;}
+.countdown-lbl{font-size:.6rem;color:var(--muted);}
+.seats-display{display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;font-size:.8rem;}
+.seats-track{background:rgba(228,245,240,.08);height:8px;border-radius:4px;overflow:hidden;margin-bottom:.4rem;}
+.seats-fill2{height:100%;width:70%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:4px;animation:fillBar 1.5s ease forwards;}
+@keyframes fillBar{from{width:0}to{width:70%}}
+.seats-txt{font-size:.75rem;color:rgba(228,245,240,.4);}
+
+/* Success State */
+.success-screen{display:none;text-align:center;padding:3rem 2rem;}
+.success-icon{font-size:4rem;margin-bottom:1.5rem;}
+.success-screen h3{font-family:'Tajawal',sans-serif;font-weight:700;font-size:1.5rem;margin-bottom:.8rem;}
+.success-screen p{font-size:.9rem;color:var(--muted);margin-bottom:2rem;line-height:1.8;}
+
+@media(max-width:1024px){.reg-layout{grid-template-columns:1fr;}}
+@media(max-width:600px){.form-row{grid-template-columns:1fr;}.countdown-grid{grid-template-columns:repeat(4,1fr);}.form-card{padding:1.5rem;}}
+</style>
+</head>
+<body>
+<canvas id="fluid-canvas"></canvas>
+<nav>
+  <a href="main.html" class="logo"><img src="assets/teknovado_logo.jpg" alt="TeknoVado"></a>
+  <ul class="nav-links">
+    <li><a href="main.html">الرئيسية</a></li>
+    <li><a href="service.html">الخدمات</a></li>
+    <li><a href="curriculum.html">الكورس</a></li>
+    <li><a href="community.html">المجتمع</a></li>
+    <li><a href="register.html">التسجيل</a></li>
+  </ul>
+  <a href="register.html" class="nav-cta">سجّل الآن</a>
+  <button class="hamburger" id="hamburger"><span></span><span></span><span></span></button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="main.html" class="mob-link">الرئيسية</a>
+  <a href="service.html" class="mob-link">الخدمات</a>
+  <a href="curriculum.html" class="mob-link">الكورس</a>
+  <a href="community.html" class="mob-link">المجتمع</a>
+  <a href="register.html" class="mob-link">التسجيل</a>
+  <a href="register.html" class="nav-cta mob-link" style="text-decoration:none;">سجّل الآن 🎮</a>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-bg"></div>
+  <div class="page-hero-glow"></div>
+  <div class="page-hero-inner">
+    <div class="breadcrumb"><a href="main.html">الرئيسية</a><span>/</span><span style="color:var(--white)">التسجيل</span></div>
+    <div class="badge" style="margin-bottom:1.2rem;"><div class="badge-dot"></div>٣ مقاعد متبقية فقط</div>
+    <h1 class="sec-title">سجّل الآن<br><span style="color:var(--cyan)">الدفعة الجديدة</span></h1>
+    <p class="sec-sub">أكمل النموذج وسنتواصل معك خلال 24 ساعة لتأكيد حجزك.</p>
+  </div>
+</div>
+
+<section>
+  <div class="inner">
+    <div class="reg-layout">
+
+      <!-- FORM -->
+      <div class="reveal">
+        <div class="form-card">
+          <div class="form-title">نموذج التسجيل</div>
+          <div class="form-sub">أكمل البيانات التالية وسنتواصل معك خلال 24 ساعة.</div>
+
+          <form id="regForm" onsubmit="handleSubmit(event)">
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>الاسم الأول *</label>
+                <input type="text" placeholder="محمد" required>
+              </div>
+              <div class="form-group">
+                <label>الاسم الأخير *</label>
+                <input type="text" placeholder="الأحمد" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>البريد الإلكتروني *</label>
+              <input type="email" placeholder="name@email.com" required>
+            </div>
+
+            <div class="form-group">
+              <label>رقم الهاتف (واتساب) *</label>
+              <input type="tel" placeholder="+966 5X XXX XXXX" required>
+            </div>
+
+            <div class="form-group">
+              <label>العمر</label>
+              <select>
+                <option value="" disabled selected>اختر الفئة العمرية</option>
+                <option>١٢ — ١٥ سنة</option>
+                <option>١٦ — ١٩ سنة</option>
+                <option>٢٠ — ٢٥ سنة</option>
+                <option>٢٥+ سنة</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>اختر الخدمة *</label>
+              <div class="service-select">
+                <div class="svc-option selected" onclick="selectService(this)">
+                  <input type="radio" name="service" checked>
+                  <div class="radio-dot"></div>
+                  <div class="svc-opt-icon">🎓</div>
+                  <div class="svc-opt-info">
+                    <h5>كورس تطوير الألعاب</h5>
+                    <p>6 أقسام — دفعة 10 طلاب</p>
+                  </div>
+                  <div class="svc-opt-price">٤٩٩ ريال</div>
+                </div>
+                <div class="svc-option" onclick="selectService(this)">
+                  <input type="radio" name="service">
+                  <div class="radio-dot"></div>
+                  <div class="svc-opt-icon">🕹️</div>
+                  <div class="svc-opt-info">
+                    <h5>تطوير لعبة خاصة</h5>
+                    <p>من الفكرة حتى Steam</p>
+                  </div>
+                  <div class="svc-opt-price">يبدأ ١٥٠٠</div>
+                </div>
+                <div class="svc-option" onclick="selectService(this)">
+                  <input type="radio" name="service">
+                  <div class="radio-dot"></div>
+                  <div class="svc-opt-icon">👾</div>
+                  <div class="svc-opt-info">
+                    <h5>انضمام للمجتمع فقط</h5>
+                    <p>Discord + تحديات أسبوعية</p>
+                  </div>
+                  <div class="svc-opt-price">مجاني</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>مستواك الحالي في البرمجة</label>
+              <select>
+                <option value="" disabled selected>اختر مستواك</option>
+                <option>مبتدئ تماماً</option>
+                <option>أعرف الأساسيات</option>
+                <option>متوسط</option>
+                <option>متقدم</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>هل لديك أسئلة أو ملاحظات؟</label>
+              <textarea placeholder="اكتب هنا أي أسئلة أو تفاصيل إضافية..."></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">أرسل طلب التسجيل 🎮</button>
+            <p class="form-note">بالضغط على الإرسال توافق على التواصل معك للتأكيد. لا مدفوعات قبل التأكيد.</p>
+          </form>
+
+          <div class="success-screen" id="successScreen">
+            <div class="success-icon">🎉</div>
+            <h3>تم استلام طلبك!</h3>
+            <p>شكراً! سيتواصل معك فريق TeknoVado خلال <strong style="color:var(--cyan)">24 ساعة</strong> على الواتساب والإيميل لتأكيد الحجز وإرسال تفاصيل الدفع.</p>
+            <a href="community.html" class="btn-primary" style="display:inline-block;text-decoration:none;">انضم للمجتمع بينما تنتظر ✨</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <div class="info-sidebar reveal d1">
+
+        <!-- COUNTDOWN -->
+        <div class="countdown-box">
+          <div class="countdown-title">⏳ بداية الدفعة القادمة</div>
+          <div class="countdown-grid">
+            <div class="countdown-unit"><div class="countdown-num" id="cd-days">14</div><div class="countdown-lbl">يوم</div></div>
+            <div class="countdown-unit"><div class="countdown-num" id="cd-hours">08</div><div class="countdown-lbl">ساعة</div></div>
+            <div class="countdown-unit"><div class="countdown-num" id="cd-mins">32</div><div class="countdown-lbl">دقيقة</div></div>
+            <div class="countdown-unit"><div class="countdown-num" id="cd-secs">00</div><div class="countdown-lbl">ثانية</div></div>
+          </div>
+        </div>
+
+        <!-- SEATS -->
+        <div class="info-box">
+          <h4>🪑 حالة المقاعد</h4>
+          <div class="seats-display">
+            <span style="font-size:.8rem;color:var(--muted);">المقاعد المحجوزة</span>
+            <span style="font-family:'Tajawal';font-weight:700;color:var(--cyan);">7 / 10</span>
+          </div>
+          <div class="seats-track"><div class="seats-fill2"></div></div>
+          <p class="seats-txt">٣ مقاعد فقط متبقية — احجز الآن!</p>
+        </div>
+
+        <!-- WHAT'S INCLUDED -->
+        <div class="info-box">
+          <h4>✨ ماذا يشمل الكورس</h4>
+          <ul class="info-list">
+            <li>6 أقسام تفصيلية عملية</li>
+            <li>دفعة صغيرة 10 طلاب</li>
+            <li>لعبة قابلة للنشر</li>
+            <li>شهادة إتمام رسمية</li>
+            <li>شهران دعم فني بعد التخرج</li>
+            <li>إرشاد نشر على Steam</li>
+            <li>ملف أعمال احترافي</li>
+            <li>عضوية مجتمع مايل كانو</li>
+          </ul>
+        </div>
+
+        <!-- FAQ QUICK -->
+        <div class="info-box">
+          <h4>❓ أسئلة سريعة</h4>
+          <ul class="info-list">
+            <li>لا تحتاج خبرة سابقة</li>
+            <li>لابتوب متوسط يكفي</li>
+            <li>حضور حضوري وعن بُعد</li>
+            <li>لا مدفوعات قبل التأكيد</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-logo"><img src="assets/teknovado_logo.jpg" alt="TeknoVado"></div>
+  <ul class="foot-links">
+    <li><a href="main.html">الرئيسية</a></li>
+    <li><a href="service.html">الخدمات</a></li>
+    <li><a href="curriculum.html">الكورس</a></li>
+    <li><a href="community.html">المجتمع</a></li>
+    <li><a href="register.html">التسجيل</a></li>
+  </ul>
+  <p>© 2025 TeknoVado — جميع الحقوق محفوظة</p>
+</footer>
+
+<script>
+const canvas = document.getElementById('fluid-canvas');
+const ctx = canvas.getContext('2d');
+let W=window.innerWidth,H=window.innerHeight;
+canvas.width=W;canvas.height=H;
+window.addEventListener('resize',()=>{W=window.innerWidth;H=window.innerHeight;canvas.width=W;canvas.height=H;});
+const TRAIL=26;
+const pts=Array.from({length:TRAIL},()=>({x:W/2,y:H/2}));
+let mx=W/2,my=H/2,isHover=false;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+const colors=[[0,232,200],[57,245,160],[0,180,160],[120,255,210]];
+let colorT=0;
+function lerp(a,b,t){return a.map((v,i)=>v+(b[i]-v)*t);}
+function animCursor(){
+  ctx.clearRect(0,0,W,H);colorT+=0.007;
+  const ci=Math.floor(colorT)%colors.length,cn=(ci+1)%colors.length;
+  const col=lerp(colors[ci],colors[cn],colorT-Math.floor(colorT));
+  pts[0].x+=(mx-pts[0].x)*0.22;pts[0].y+=(my-pts[0].y)*0.22;
+  for(let i=1;i<TRAIL;i++){pts[i].x+=(pts[i-1].x-pts[i].x)*0.28;pts[i].y+=(pts[i-1].y-pts[i].y)*0.28;}
+  for(let i=TRAIL-1;i>=0;i--){
+    const t=i/TRAIL,alpha=(1-t)*(isHover?.75:.55);
+    const sz=isHover?(1-t)*20+5:(1-t)*12+3;
+    const wb=Math.sin(Date.now()*.003+i*.4)*(isHover?3:1.5);
+    ctx.save();ctx.translate(pts[i].x,pts[i].y);
+    const g=ctx.createRadialGradient(0,0,0,0,0,sz*2.5);
+    g.addColorStop(0,`rgba(${col[0]},${col[1]},${col[2]},${alpha*.45})`);
+    g.addColorStop(1,`rgba(${col[0]},${col[1]},${col[2]},0)`);
+    ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(0,0,sz*2.5,sz*2.5,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=`rgba(${col[0]},${col[1]},${col[2]},${alpha})`;
+    ctx.beginPath();ctx.ellipse(0,0,sz+wb,sz-wb,0,0,Math.PI*2);ctx.fill();
+    ctx.restore();
+  }
+  ctx.save();ctx.translate(pts[0].x,pts[0].y);
+  ctx.fillStyle=`rgba(${col[0]},${col[1]},${col[2]},1)`;
+  ctx.beginPath();ctx.arc(0,0,isHover?7:3.5,0,Math.PI*2);ctx.fill();ctx.restore();
+  requestAnimationFrame(animCursor);
+}
+animCursor();
+document.querySelectorAll('button,a,input,textarea,select,.card,.faq-item').forEach(el=>{
+  el.addEventListener('mouseenter',()=>isHover=true);
+  el.addEventListener('mouseleave',()=>isHover=false);
+});
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('show');});},{threshold:.1});
+document.querySelectorAll('.reveal').forEach(r=>obs.observe(r));
+const ham=document.getElementById('hamburger'),mob=document.getElementById('mobileMenu');
+ham.addEventListener('click',()=>{const o=mob.classList.contains('open');mob.classList.toggle('open',!o);ham.classList.toggle('open',!o);document.body.style.overflow=o?'':'hidden';});
+document.querySelectorAll('.mob-link').forEach(l=>l.addEventListener('click',()=>{mob.classList.remove('open');ham.classList.remove('open');document.body.style.overflow='';}));
+document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const t=document.querySelector(a.getAttribute('href'));if(t)t.scrollIntoView({behavior:'smooth',block:'start'});}));
+if('ontouchstart' in window){canvas.style.display='none';document.body.style.cursor='auto';}
+</script>
+<script>
+document.querySelectorAll('.nav-links a').forEach(a=>{if(a.getAttribute('href')==='register.html')a.classList.add('active');});
+
+function selectService(el){
+  document.querySelectorAll('.svc-option').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  el.querySelector('input[type="radio"]').checked=true;
+}
+
+function handleSubmit(e){
+  e.preventDefault();
+  document.getElementById('regForm').style.display='none';
+  document.getElementById('successScreen').style.display='block';
+}
+
+// Countdown Timer
+const target=new Date();
+target.setDate(target.getDate()+14);
+function updateCountdown(){
+  const now=new Date(),diff=target-now;
+  if(diff<=0)return;
+  const d=Math.floor(diff/86400000);
+  const h=Math.floor((diff%86400000)/3600000);
+  const m=Math.floor((diff%3600000)/60000);
+  const s=Math.floor((diff%60000)/1000);
+  document.getElementById('cd-days').textContent=String(d).padStart(2,'0');
+  document.getElementById('cd-hours').textContent=String(h).padStart(2,'0');
+  document.getElementById('cd-mins').textContent=String(m).padStart(2,'0');
+  document.getElementById('cd-secs').textContent=String(s).padStart(2,'0');
+}
+updateCountdown();
+setInterval(updateCountdown,1000);
+</script>
+</body></html>
